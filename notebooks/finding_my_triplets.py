@@ -56,7 +56,9 @@ def find_triplet_in_sentence(sent, verb, object_form, prep_in_var_of_constr=None
 
             else:
                 triplet['object'] = sent[object_id - 1]['form']
-
+    else:
+        if object_id:
+            triplet['object'] = sent[object_id - 1]['form']
     return triplet
 
 
@@ -93,12 +95,14 @@ def get_standart_date(date):
         return date_array[0]
 
 if __name__ == '__main__':
-    sentences1 = read_conllu('parsed_sents_pisat_test_2-18.conllu')
-    object_form = {'Case': 'Dat'} #, 'Animacy': 'Anim'}
-    verb = 'писать'
+    sentences1 = read_conllu('parsed_sents_ugrozhat_test_2-19.conllu')
+    object_form = {'Case': 'Dat'}
+    verb = 'угрожать'
     prep_in_var_of_constr = None
-    prep_in_constr = 'к'
+    prep_in_constr = None
     triplets1 = get_all_triples(sentences1, verb, object_form, prep_in_var_of_constr, prep_in_constr)
+
+    # find_triplet_in_sentence(sentences1[16], verb, object_form, prep_in_var_of_constr=None, prep_in_constr=None)
 
 #    sentences2 = read_conllu('parsed_sents_pisat_Dat.conllu')
 #    object_form = {'Case': 'Dat'} #, 'Animacy': 'Anim'}
@@ -119,5 +123,7 @@ if __name__ == '__main__':
     print(count_triplets(triplets1))
 
 
-    print(sentences1[48])
-    print(sentences1[16])
+    print(sentences1[83][35])
+
+
+    print(find_triplet_in_sentence(sentences1[83], verb, object_form, prep_in_var_of_constr=None, prep_in_constr=None))
