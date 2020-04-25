@@ -20,8 +20,8 @@ def check_object(token, object_form): # checking if form of object is
         return True
 
 
-def find_triplet_in_sentence(sent, verb, object_form, prep_in_var_of_constr=None, prep_in_constr=None):
-                                                        # finding triplet (verb, object, prep_in_var_of_constr) for one sentence
+def find_triplet_in_sentence(sent, verb_lemmas, object_form, prep_in_var_of_constr=None, prep_in_constr=None):
+                                                        # finding triplet (verb_lemmas, object, prep_in_var_of_constr) for one sentence
     # TODO: подумать про случаи, когда несколько подходящих глаголов в предложении
     triplet = {}
     verb_id = None
@@ -29,7 +29,7 @@ def find_triplet_in_sentence(sent, verb, object_form, prep_in_var_of_constr=None
     for token in sent:
 
         # ищем id глагола, чтобы потом искать его зависимые
-        if token['lemma'] == verb:
+        if token['lemma'] in verb_lemmas:
             verb_id = token['id']
             triplet['verb'] = token['form']
 
@@ -62,11 +62,11 @@ def find_triplet_in_sentence(sent, verb, object_form, prep_in_var_of_constr=None
     return triplet
 
 
-def get_all_triples(sentences, verb, object_form, prep_in_var_of_constr=None, prep_in_constr=None):
+def get_all_triples(sentences, verb_lemmas, object_form, prep_in_var_of_constr=None, prep_in_constr=None):
                                                             # finding triplet for all sentences (returns dictionary)
     triples = []
     for i, sent in enumerate(sentences):
-        triplet = find_triplet_in_sentence(sent, verb, object_form, prep_in_var_of_constr, prep_in_constr)
+        triplet = find_triplet_in_sentence(sent, verb_lemmas, object_form, prep_in_var_of_constr, prep_in_constr)
         triplet['id'] = i
         triples.append(triplet)
     return triples
@@ -95,21 +95,12 @@ def get_standart_date(date):
         return date_array[0]
 
 if __name__ == '__main__':
-    sentences1 = read_conllu('parsed_sents_ugrozhat_test_2-19.conllu')
-    object_form = {'Case': 'Dat'}
-    verb = 'угрожать'
-    prep_in_var_of_constr = None
-    prep_in_constr = None
-    triplets1 = get_all_triples(sentences1, verb, object_form, prep_in_var_of_constr, prep_in_constr)
-
-    # find_triplet_in_sentence(sentences1[16], verb, object_form, prep_in_var_of_constr=None, prep_in_constr=None)
-
-#    sentences2 = read_conllu('parsed_sents_pisat_Dat.conllu')
-#    object_form = {'Case': 'Dat'} #, 'Animacy': 'Anim'}
-#    verb = 'писать'
-#    prep_in_var_of_constr = False
-#    prep_in_constr = 'к'
-#    triplets2 = get_all_triples(sentences2, verb, object_form, prep_in_var_of_constr, prep_in_constr)
+    sentences1 = read_conllu('parsed_sents_otnyat_test_2-19.conllu')
+    object_form = {'Case': 'Gen'} # , 'Animacy': 'Anim'}
+    verb_lemmas = ['отнимать', 'отнять']
+    prep_in_var_of_constr = 'от'
+    prep_in_constr = 'от'
+    triplets1 = get_all_triples(sentences1, verb_lemmas, object_form, prep_in_var_of_constr, prep_in_constr)
 
 #    ids = get_indexes(triplets2)
 #     print(ids)
@@ -122,8 +113,14 @@ if __name__ == '__main__':
 
     print(count_triplets(triplets1))
 
+    print(sentences1[28])
+    print(sentences1[223])
+    print(sentences1[225])
+    print(sentences1[258])
+    print(sentences1[258])
+    print(sentences1[489])
+    print(sentences1[490])
 
-    print(sentences1[83][35])
 
 
-    print(find_triplet_in_sentence(sentences1[83], verb, object_form, prep_in_var_of_constr=None, prep_in_constr=None))
+    # print(find_triplet_in_sentence(sentences1[83], verb_lemmas, object_form, prep_in_var_of_constr=None, prep_in_constr=None))
