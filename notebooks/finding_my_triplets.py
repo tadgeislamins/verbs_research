@@ -81,11 +81,18 @@ def get_all_triples(sentences, verb_lemmas, object_form, prep_in_var_of_constr=N
         triples.append(triplet)
     return triples
 
-def count_triplets(triplets):
+def count_triplets(triplets, sentences):
     count = 0
     for tr in triplets:
         if 'object' in tr:
             count+=1
+            start_position = tr['verb_id_for_sent']-3
+            end_position = tr['object_id_for_sent']+4
+            # print(sentences[tr[id]][start_position:end_position])
+            sent_id = tr['id']
+            tokens = sentences[sent_id][start_position:end_position]
+            preview_list = [token['form'] for token in tokens]
+            print('id', sent_id, *preview_list)
     return count
 
 def get_indexes(triplets):
@@ -120,17 +127,21 @@ if __name__ == '__main__':
 #    ids = get_indexes(triplets2)
 #     print(ids)
 
-    for tr in triplets:
-        print(tr)
+    # for tr in triplets:
+    #     print(tr)
  #   a = get_standart_date('1456-1876')
 #    print(a)
 
 
-    print(count_triplets(triplets))
+    print(count_triplets(triplets, sentences))
 
     print(sentences[370])
     print(sentences[223])
-    print(sentences[225])
+
+    tokens = sentences[225][0:5]
+    preview_list = [token['form'] for token in tokens]
+    print(*preview_list)
+
 
 
 
