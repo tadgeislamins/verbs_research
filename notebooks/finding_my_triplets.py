@@ -83,35 +83,39 @@ def get_all_triples(sentences, verb_lemmas, object_form, prep_in_var_of_constr=N
         triples.append(triplet)
     return triples
 
-def count_triplets(triplets, sentences):
-    count = 0
-    for tr in triplets:
-        if 'object' in tr:
-            count+=1
-            sent_id = tr['id']
-            start_position = tr['verb_id_for_sent']-3
-            if start_position < 0:
-                start_position = 0
-            end_position = tr['object_id_for_sent']+4
-            if len(sentences[sent_id]) < end_position:
-                end_position = len(sentences[sent_id])
-
-            tokens = sentences[sent_id][start_position:end_position]
-            preview_list = [token['form'] for token in tokens]
-            print('id', sent_id, *preview_list)
-    return count
+# def count_triplets(triplets, sentences):
+#     count = 0
+#     for tr in triplets:
+#         if 'object' in tr:
+#             count+=1
+#             sent_id = tr['id']
+#             start_position = tr['verb_id_for_sent']-3
+#             if start_position < 0:
+#                 start_position = 0
+#             end_position = tr['object_id_for_sent']+4
+#             if len(sentences[sent_id]) < end_position:
+#                 end_position = len(sentences[sent_id])
+#
+#             tokens = sentences[sent_id][start_position:end_position]
+#             preview_list = [token['form'] for token in tokens]
+#             print('id', sent_id, *preview_list)
+#     return count
 
 def count_necessary_triplets(necessary_triplets, sentences):
     count = len(necessary_triplets)
     for tr in necessary_triplets:
         sent_id = tr['id']
 
-        start_position = tr['verb_id_for_sent']-3
-        if start_position < 0:
-            start_position = 0
-        end_position = tr['object_id_for_sent']+4
+        start_position = tr['verb_id_for_sent']
+        end_position = tr['object_id_for_sent']+1
         if len(sentences[sent_id]) < end_position:
             end_position = len(sentences[sent_id])
+        # start_position = tr['verb_id_for_sent']-3
+        # if start_position < 0:
+        #     start_position = 0
+        # end_position = tr['object_id_for_sent']+4
+        # if len(sentences[sent_id]) < end_position:
+        #     end_position = len(sentences[sent_id])
 
         tokens = sentences[sent_id][start_position:end_position]
         preview_list = [token['form'] for token in tokens]
@@ -119,6 +123,16 @@ def count_necessary_triplets(necessary_triplets, sentences):
 
     return count
 
+def show_preview_for_sent(triplet, sentence):
+    start_position = triplet['verb_id_for_sent']-3
+    if start_position < 0:
+        start_position = 0
+    end_position = triplet['object_id_for_sent']+4
+    if len(sentence) < end_position:
+        end_position = len(sentence)
+    tokens = sentence[start_position:end_position]
+    preview_list = [token['form'] for token in tokens]
+    print(*preview_list)
 
 def get_indexes(triplets):
     ids = []
@@ -156,7 +170,7 @@ if __name__ == '__main__':
 #    print(a)
 
 
-    print(count_triplets(triplets, sentences))
+    # print(count_triplets(triplets, sentences))
 
     print(sentences[370])
     print(sentences[223])
