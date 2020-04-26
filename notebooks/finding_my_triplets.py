@@ -51,14 +51,14 @@ def find_triplet_in_sentence(sent, verb_lemmas, object_form, prep_in_var_of_cons
     if prep_in_constr and object_id:  # looking for a preposition, if there is
         if prep_in_var_of_constr:
             for token in sent:
-                if token['head'] == object_id and token['form'] == prep_in_var_of_constr:
+                if token['head'] == object_id and token['form'] in prep_in_var_of_constr:
                     triplet['object'] = sent[object_id - 1]['form']
                     triplet['object_id_for_sent'] = object_id - 1
-                    triplet['preposition'] = prep_in_var_of_constr
+                    triplet['preposition'] = prep_in_var_of_constr[0] # в триплет записываем основной вариант предлога вне зависимости от того, который был изначально
         else:
             for token in sent:  # looking for a preposition, if there isn't
                 if token['head'] == object_id:
-                    if token['form'] == prep_in_constr:
+                    if token['form'] in prep_in_constr:
                         break
                     elif token['upostag']:
                         if token['upostag'] == 'ADP':
@@ -152,32 +152,32 @@ def get_standart_date(date):
 
 if __name__ == '__main__':
 
-    sentences = read_conllu('parsed_sents_ugrozhat_test_2-19.conllu')
+    sentences = read_conllu('parsed_sents_pisat-18-2.conllu')
 
-    object_form = {'Case': 'Acc'}
-    verb_lemmas = ['угрожать']
-    prep_in_var_of_constr = None
-    prep_in_constr = None
+    object_form = {'Case': 'Dat'}
+    verb_lemmas = ['писать']
+    prep_in_var_of_constr = ['к', 'ко', 'къ']
+    prep_in_constr = ['к', 'ко', 'къ']
 
     triplets = get_all_triples(sentences, verb_lemmas, object_form, prep_in_var_of_constr, prep_in_constr)
 
 #    ids = get_indexes(triplets2)
 #     print(ids)
 
-    # for tr in triplets:
-    #     print(tr)
+    for tr in triplets:
+        print(tr)
  #   a = get_standart_date('1456-1876')
 #    print(a)
 
 
-    # print(count_triplets(triplets, sentences))
+    print(count_triplets(triplets, sentences))
 
     print(sentences[370])
     print(sentences[223])
 
-    tokens = sentences[225][0:5]
-    preview_list = [token['form'] for token in tokens]
-    print(*preview_list)
+    # tokens = sentences[225][0:5]
+    # preview_list = [token['form'] for token in tokens]
+    # print(*preview_list)
 
 
 
