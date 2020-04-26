@@ -1,4 +1,6 @@
 from conllu import parse
+from pymorphy2 import MorphAnalyzer
+pymorphy2_analyzer = MorphAnalyzer()
 
 def read_conllu(conllu_fname): # reading conllu file with parsed sentences
     with open(conllu_fname, 'r', encoding = "UTF-8") as f:
@@ -32,10 +34,15 @@ def find_triplet_in_sentence(sent, verb_lemmas, object_form, prep_in_var_of_cons
         if token['lemma'] in verb_lemmas:
             verb_id = token['id']
             triplet['verb'] = token['form']
+            triplet['verb_id_for_sent'] = verb_id - 1
 
         # ищем зависимые (NB: в нашем случае зависимые всегда идут после глагола, поэтому в одном цикле)
         if token['head'] == verb_id:
-            if token['upostag'] in ['NOUN', 'PROPN', 'PRON'] and check_object(token, object_form):
+            pymorphy_object_form = syntagrus_pymorphy_dict[object_form['Case']]
+            pymorphy_token = pymorphy2_analyzer.parse(token['form'])
+            # ..... # парсинг pymorphy
+            # if (token['upostag'] in ['NOUN', 'PROPN', 'PRON'] and check_object(token, object_form)):
+            if token['upostag'] in ['NOUN', 'PROPN', 'PRON'] and (check_object(token, object_form) or pymorphy_token[0].tag.case == pymorphy_object_form):
                 object_id = token['id']
                 break  # мы нашли объект (TODO: bla bla)
 
@@ -44,11 +51,12 @@ def find_triplet_in_sentence(sent, verb_lemmas, object_form, prep_in_var_of_cons
             for token in sent:
                 if token['head'] == object_id and token['form'] == prep_in_var_of_constr:
                     triplet['object'] = sent[object_id - 1]['form']
+                    triplet['object_id_for_sent'] = object_id - 1
                     triplet['preposition'] = prep_in_var_of_constr
         else:
             for token in sent:  # looking for a preposition, if there isn't
                 if token['head'] == object_id:
-                    if token['form'] == prep_in_constr: # может быть, любой предлог искать ??
+                    if token['form'] == prep_in_constr:
                         break
                     elif token['upostag']:
                         if token['upostag'] == 'ADP':
@@ -56,9 +64,11 @@ def find_triplet_in_sentence(sent, verb_lemmas, object_form, prep_in_var_of_cons
 
             else:
                 triplet['object'] = sent[object_id - 1]['form']
+                triplet['object_id_for_sent'] = object_id - 1
     else:
         if object_id:
             triplet['object'] = sent[object_id - 1]['form']
+            triplet['object_id_for_sent'] = object_id - 1
     return triplet
 
 
@@ -95,31 +105,36 @@ def get_standart_date(date):
         return date_array[0]
 
 if __name__ == '__main__':
-    sentences1 = read_conllu('parsed_sents_otnyat_test_2-19.conllu')
-    object_form = {'Case': 'Gen'} # , 'Animacy': 'Anim'}
-    verb_lemmas = ['отнимать', 'отнять']
-    prep_in_var_of_constr = 'от'
-    prep_in_constr = 'от'
-    triplets1 = get_all_triples(sentences1, verb_lemmas, object_form, prep_in_var_of_constr, prep_in_constr)
+
+    syntagrus_pymorphy_dict = {'Acc': 'accs', 'Dat': 'datv', 'Gen': 'gent', 'Ins': 'ablt', 'Loc': 'loct'}
+
+    sentences = read_conllu('parsed_sents_ugrozhat_test_2-19.conllu')
+
+    object_form = {'Case': 'Acc'}
+    verb_lemmas = ['угрожать']
+    prep_in_var_of_constr = None
+    prep_in_constr = None
+
+    triplets = get_all_triples(sentences, verb_lemmas, object_form, prep_in_var_of_constr, prep_in_constr)
 
 #    ids = get_indexes(triplets2)
 #     print(ids)
 
-    for tr in triplets1:
+    for tr in triplets:
         print(tr)
  #   a = get_standart_date('1456-1876')
 #    print(a)
 
 
-    print(count_triplets(triplets1))
+    print(count_triplets(triplets))
 
-    print(sentences1[28])
-    print(sentences1[223])
-    print(sentences1[225])
-    print(sentences1[258])
-    print(sentences1[258])
-    print(sentences1[489])
-    print(sentences1[490])
+    print(sentences[370])
+    print(sentences[223])
+    print(sentences[225])
+
+
+
+
 
 
 
