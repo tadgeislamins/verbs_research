@@ -25,6 +25,8 @@ def check_object(token, object_form): # checking if form of object is
 def find_triplet_in_sentence(sent, verb_lemmas, object_form, prep_in_var_of_constr=None, prep_in_constr=None):
                                                         # finding triplet (verb_lemmas, object, prep_in_var_of_constr) for one sentence
     # TODO: подумать про случаи, когда несколько подходящих глаголов в предложении
+    syntagrus_pymorphy_dict = {'Acc': 'accs', 'Dat': 'datv', 'Gen': 'gent', 'Ins': 'ablt', 'Loc': 'loct'}
+
     triplet = {}
     verb_id = None
     object_id = None
@@ -86,14 +88,37 @@ def count_triplets(triplets, sentences):
     for tr in triplets:
         if 'object' in tr:
             count+=1
-            start_position = tr['verb_id_for_sent']-3
-            end_position = tr['object_id_for_sent']+4
-            # print(sentences[tr[id]][start_position:end_position])
             sent_id = tr['id']
+            start_position = tr['verb_id_for_sent']-3
+            if start_position < 0:
+                start_position = 0
+            end_position = tr['object_id_for_sent']+4
+            if len(sentences[sent_id]) < end_position:
+                end_position = len(sentences[sent_id])
+
             tokens = sentences[sent_id][start_position:end_position]
             preview_list = [token['form'] for token in tokens]
             print('id', sent_id, *preview_list)
     return count
+
+def count_necessary_triplets(necessary_triplets, sentences):
+    count = len(necessary_triplets)
+    for tr in necessary_triplets:
+        sent_id = tr['id']
+
+        start_position = tr['verb_id_for_sent']-3
+        if start_position < 0:
+            start_position = 0
+        end_position = tr['object_id_for_sent']+4
+        if len(sentences[sent_id]) < end_position:
+            end_position = len(sentences[sent_id])
+
+        tokens = sentences[sent_id][start_position:end_position]
+        preview_list = [token['form'] for token in tokens]
+        print('id', sent_id, *preview_list)
+
+    return count
+
 
 def get_indexes(triplets):
     ids = []
@@ -112,8 +137,6 @@ def get_standart_date(date):
         return date_array[0]
 
 if __name__ == '__main__':
-
-    syntagrus_pymorphy_dict = {'Acc': 'accs', 'Dat': 'datv', 'Gen': 'gent', 'Ins': 'ablt', 'Loc': 'loct'}
 
     sentences = read_conllu('parsed_sents_ugrozhat_test_2-19.conllu')
 
