@@ -1,6 +1,26 @@
 from conllu import parse
 from pymorphy2 import MorphAnalyzer
 pymorphy2_analyzer = MorphAnalyzer()
+import pandas as pd
+
+def create_path_and_file_name(name):
+    path = '../data/{}.xlsx'.format(name)
+    text_file_name = 'sents_{}.txt'.format(name)
+    conllu_file_name = 'parsed_sents_{}.conllu'.format(name)
+    file_name = [path, text_file_name, conllu_file_name]
+    return file_name
+
+def read_preprocess_data(names):
+    dataframe = pd.read_excel(names[0])
+    dataframe.drop(columns=['Reversed left context', 'Reversed center', 'Title', 'Author', 'Birthday', 'Header',
+                            'Publ_year', 'Medium', 'Ambiguity', 'Publication', 'Sphere', 'Type', 'Topic'], inplace = True)
+    return dataframe
+
+def create_text_file(dataframe, names):
+    with open(names[1], 'w', encoding = "UTF-8") as f:
+        for i in range(dataframe.shape[0]):
+            sent = dataframe['Full context'][i]
+            f.write(sent[:sent.find('[')-1] + '\n')
 
 def read_conllu(conllu_fname): # reading conllu file with parsed sentences
     with open(conllu_fname, 'r', encoding = "UTF-8") as f:
@@ -10,7 +30,7 @@ def read_conllu(conllu_fname): # reading conllu file with parsed sentences
 
 def check_object(token, object_form): # checking if form of object is
                                                     # identical with the form we search for this construction
-    if not token['feats']:
+    if not token['feats'] or 'Case' not in token['feats']:
         return False
     else:
         if 'Foreign' in token['feats'] and token['feats']['Foreign'] == 'Yes':
@@ -21,10 +41,8 @@ def check_object(token, object_form): # checking if form of object is
                 return False
         return True
 
-
 def find_triplet_in_sentence(sent, verb_lemmas, object_form, prep_in_var_of_constr=None, prep_in_constr=None):
                                                         # finding triplet (verb_lemmas, object, prep_in_var_of_constr) for one sentence
-    # TODO: подумать про случаи, когда несколько подходящих глаголов в предложении
     syntagrus_pymorphy_dict = {'Acc': 'accs', 'Dat': 'datv', 'Gen': 'gent', 'Ins': 'ablt', 'Loc': 'loct'}
 
     triplet = {}
@@ -73,7 +91,6 @@ def find_triplet_in_sentence(sent, verb_lemmas, object_form, prep_in_var_of_cons
             triplet['object_id_for_sent'] = object_id - 1
     return triplet
 
-
 def get_all_triples(sentences, verb_lemmas, object_form, prep_in_var_of_constr=None, prep_in_constr=None):
                                                             # finding triplet for all sentences (returns dictionary)
     triples = []
@@ -82,24 +99,6 @@ def get_all_triples(sentences, verb_lemmas, object_form, prep_in_var_of_constr=N
         triplet['id'] = i
         triples.append(triplet)
     return triples
-
-# def count_triplets(triplets, sentences):
-#     count = 0
-#     for tr in triplets:
-#         if 'object' in tr:
-#             count+=1
-#             sent_id = tr['id']
-#             start_position = tr['verb_id_for_sent']-3
-#             if start_position < 0:
-#                 start_position = 0
-#             end_position = tr['object_id_for_sent']+4
-#             if len(sentences[sent_id]) < end_position:
-#                 end_position = len(sentences[sent_id])
-#
-#             tokens = sentences[sent_id][start_position:end_position]
-#             preview_list = [token['form'] for token in tokens]
-#             print('id', sent_id, *preview_list)
-#     return count
 
 def count_necessary_triplets(necessary_triplets, sentences):
     count = len(necessary_triplets)
@@ -116,7 +115,6 @@ def count_necessary_triplets(necessary_triplets, sentences):
         # end_position = tr['object_id_for_sent']+4
         # if len(sentences[sent_id]) < end_position:
         #     end_position = len(sentences[sent_id])
-
         tokens = sentences[sent_id][start_position:end_position]
         preview_list = [token['form'] for token in tokens]
         print('id', sent_id, *preview_list)
@@ -178,12 +176,5 @@ if __name__ == '__main__':
     # tokens = sentences[225][0:5]
     # preview_list = [token['form'] for token in tokens]
     # print(*preview_list)
-
-
-
-
-
-
-
 
     # print(find_triplet_in_sentence(sentences1[83], verb_lemmas, object_form, prep_in_var_of_constr=None, prep_in_constr=None))
